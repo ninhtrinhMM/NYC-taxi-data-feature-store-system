@@ -6,7 +6,7 @@ conda create -n MLOP2 python=3.10.18
 conda activate MLOP2
 pip install -r requirement.txt
 
-========= Batch Processing ============
+========= Batch Processing ======
 
 * Thiết lập Delta Table và cập nhập xem Folder gốc có file mới nào không
 ```cd Data-lake```
