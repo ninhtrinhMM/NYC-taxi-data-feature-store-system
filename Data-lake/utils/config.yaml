@@ -1,0 +1,8 @@
+
+datalake:
+  endpoint: 172.17.0.1:9000      #localhost:9000 cho minio chạy trên máy local
+                                # 172.17.0.1:9000 cho minio chạy trong docker container
+  bucket_name: mlop2
+  folder_name: nycdata
+  access_key: duongninh
+  secret_key: anninhhuyen098

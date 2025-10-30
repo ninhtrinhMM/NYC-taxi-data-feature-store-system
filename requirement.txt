@@ -1,0 +1,16 @@
+
+minio==7.1.16
+PyYAML==6.0.1
+
+numpy==1.23.5
+pandas==1.5.3
+
+pyspark==3.4.1
+delta-spark==2.4.0
+
+pymongo==4.5.0
+
+kafka-python==2.0.2
+
+requests==2.31.0
+python-dotenv==1.0.0

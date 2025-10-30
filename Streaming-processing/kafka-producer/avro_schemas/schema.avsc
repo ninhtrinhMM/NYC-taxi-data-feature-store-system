@@ -1,0 +1,108 @@
+{
+  "doc": "Sample schema",
+  "fields": [
+    {
+      "field": "hvfhs_license_num",
+      "type": "string"
+    },
+    {
+      "field": "dispatching_base_num",
+      "type": "string"
+    },
+    {
+      "field": "originating_base_num",
+      "type": "string"
+    },
+    {
+      "field": "request_datetime",
+      "type": "string"
+    },
+    {
+      "field": "on_scene_datetime",
+      "type": "string"
+    },
+    {
+      "field": "pickup_datetime",
+      "type": "string"
+    },
+    {
+      "field": "dropoff_datetime",
+      "type": "string"
+    },
+    {
+      "field": "PULocationID",
+      "type": "string"
+    },
+    {
+      "field": "DOLocationID",
+      "type": "string"
+    },
+    {
+      "field": "trip_miles",
+      "type": "string"
+    },
+    {
+      "field": "trip_time",
+      "type": "string"
+    },
+    {
+      "field": "base_passenger_fare",
+      "type": "string"
+    },
+    {
+      "field": "tolls",
+      "type": "string"
+    },
+    {
+      "field": "bcf",
+      "type": "string"
+    },
+    {
+      "field": "sales_tax",
+      "type": "string"
+    },
+    {
+      "field": "congestion_surcharge",
+      "type": "string"
+    },
+    {
+      "field": "airport_fee",
+      "type": "string"
+    },
+    {
+      "field": "tips",
+      "type": "string"
+    },
+    {
+      "field": "driver_pay",
+      "type": "string"
+    },
+    {
+      "field": "shared_request_flag",
+      "type": "string"
+    },
+    {
+      "field": "shared_match_flag",
+      "type": "string"
+    },
+    {
+      "field": "access_a_ride_flag",
+      "type": "string"
+    },
+    {
+      "field": "wav_request_flag",
+      "type": "string"
+    },
+    {
+      "field": "wav_match_flag",
+      "type": "string"
+    },
+    {
+      "field": "cbd_congestion_fee",
+      "type": "string"
+    }
+  ],
+  "name": "Device",
+  "namespace": "example.avro",
+  "type": "record"
+}
