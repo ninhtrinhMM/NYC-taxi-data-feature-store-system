@@ -21,7 +21,7 @@ pip install -r requirement.txt
 
 * Đưa dữ liệu từ MINIO vào PostgreSQL bởi Spark: ```cd ..``` && ```cd Batch-processing``` && ```python batch-process.py```
 
-========= Streaming Data Processing ============
+========= Streaming Data Processing ============----
 
 * Sử dụng Flink để xử lý dữ liệu từ topic "device_1" sang topic mới: ```python Streaming-processing/datastream_api.py```
 
