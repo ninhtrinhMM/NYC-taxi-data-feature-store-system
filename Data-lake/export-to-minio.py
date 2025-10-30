@@ -91,6 +91,11 @@ def main():
     for f in failed_files:
         print(f"  - {f}")
 
+    # Xóa new-files
+    with open("/opt/airflow/Project-Feature-Store/new_files_output.json", 'w') as f:
+        json.dump([], f)
+
+    print('------Xóa new_files_output thành công------')
     
 if __name__ == "__main__":
     main()

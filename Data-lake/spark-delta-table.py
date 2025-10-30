@@ -61,13 +61,13 @@ def main():
     
     new_files = [f for f in parquet_files if f not in processed_files]
     
-    if not new_files:
+    if not new_files: #new_files rỗng
         print("=== Không có file mới nào cần xử lý! ===")
         spark.stop()
         return
     
     #### Nếu tìm thấy, bắt đầu xử lý
-    print(f"🆕 Tìm thấy {len(new_files)} file mới cần xử lý:")
+    print(f"----Tìm thấy {len(new_files)} file mới cần xử lý----")
     
     # ======== HÀM ÉP KIỂU VỀ STRING ======
     def to_string(df):
@@ -91,7 +91,7 @@ def main():
 
     for idx, parquet in enumerate(new_files):
         name = os.path.splitext(os.path.basename(parquet))[0]
-        print(f"-----{idx+1}/{len(new_files)}: Bắt đầu với file {name}-----")
+        print(f"-----{idx+1}/{len(new_files)}: Bắt đầu với file {name} vào Deltatable-----")
     
         df = spark.read.parquet(parquet)
         df_fix = to_string(df)
@@ -119,8 +119,9 @@ def main():
         
         print(f"-----✅ File {name} đã được xử lý, còn lại {len(new_files) - (idx + 1)} file-----")
     
-    # ========= LƯU VERSION SAU KHI GHI =========
     print(f"==== Hoàn thành ghi {len(new_files)} file vào Delta Table====")
+
+    # ====Lưu version sau khi ghi ======
 
     delta_table = DeltaTable.forPath(spark, delta_path)
     version_after = delta_table.history(1).select("version").collect()[0][0]
@@ -151,7 +152,7 @@ def main():
     df_final.show(10, truncate=False)
     
     spark.stop()
-    print("\n🎉 Hoàn tất!")
+    print("----- Hoàn tất!")
 
 if __name__ == "__main__":
     main()

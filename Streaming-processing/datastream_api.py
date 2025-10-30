@@ -9,7 +9,7 @@ from pyflink.datastream.connectors.kafka import (
     KafkaOffsetsInitializer, KafkaRecordSerializationSchema, KafkaSink,
     KafkaSource)
 
-## Thoát ra Dir lớn nhất đã rồi hãy chạy !!!
+## Thoát ra Dir lớn nhất đã rồi RUN
 JARS_PATH = f"{os.getcwd()}/Streaming-processing/kafka-connect/jars/"  ## Để kết nối tới Jars của Kafka
 
 print ("----Đọc folder JARS thành công !-----")
