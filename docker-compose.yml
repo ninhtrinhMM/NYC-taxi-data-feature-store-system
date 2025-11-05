@@ -4,7 +4,7 @@ services:
   # of data sources
   trino:
     ports:
-      - "8080:8080"
+      - "8070:8070"
     container_name: datalake-trino
     image: "trinodb/trino:410"
     volumes:
