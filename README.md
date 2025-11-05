@@ -99,7 +99,7 @@ Cấu hình của PostgreSQL được chứa trong file connect-sink.json như s
 
 Tiến hành khởi tạo Connector bằng lệnh sau: ```cd Streaming-processing``` && ```bash run.sh register_connector ./kafka-connect/connect-sink.json```
 
-Để đảm bảo Connector "connector-db" đã được vận hành tốt, chạy lệnh sau: ```curl -s http://localhost:8083/connectors/connection098/status | python3 -m json.tool```
+Để đảm bảo Connector "connector-db" đã được vận hành tốt, chạy lệnh sau: ```curl -s http://localhost:8083/connectors/connector-db/status | python3 -m json.tool```
 
 Nếu thấy status là RUNNING nhưu trong hình thì nghĩa là vận hành thành công
 
