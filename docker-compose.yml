@@ -180,7 +180,7 @@ services:
           '--fail',
           '-X',
           'GET',
-          'http://localhost:8084/connectors',
+          'http://localhost:8083/connectors',
         ]
       start_period: 10s
       interval: 10s
