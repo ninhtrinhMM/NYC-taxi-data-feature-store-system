@@ -58,7 +58,7 @@ Vì container stream-producer đã được vận hành trong file docker compos
 
 <img width="1478" height="499" alt="Image" src="https://github.com/user-attachments/assets/c8b67cae-d624-47bf-b896-62627e46c749" />
 
-Tiếp theo, để dữ liệu trong topic "device-1" được xử lý real-time bởi Pyflink ( trường hợp này không áp dụng Water-mark stradetegy ) rồi đưa vào Topic khác với vai trò là đầu ra, chạy lệnh sau: 
+Tiếp theo, để dữ liệu trong topic "device-1" được xử lý real-time bởi Pyflink ( trường hợp này không áp dụng Water-mark stradetegy ) rồi đưa vào Topic khác tên là "NYC" với vai trò là đầu ra, chạy lệnh sau: 
 
 ```python Streaming-processing/datastream_api.py```
 
@@ -105,7 +105,11 @@ Trước hết, để Airflow có quyền chỉnh sửa trên folder "Project-Fe
 ```chmod -R 777 ./Project-Feature-Store```
 ```sudo chown -R 50000:0 < Path dẫn đến Folder "Project-Feature-Store" >```
 
-Ở file airflow-docker-compose-CeleryExe.yml, phần mount volume của airflow-worker có những lưu ý về các path local như sau: 
+Ở file airflow-docker-compose-CeleryExe.yml, thay đổi phần USER và PASS
+
+
+
+Phần mount volume của airflow-worker có những lưu ý về các path local như sau: 
 
 <img width="849" height="278" alt="Image" src="https://github.com/user-attachments/assets/76159904-eb55-4a79-bd37-0bc939ccf807" />
 
@@ -116,11 +120,42 @@ Trước hết, để Airflow có quyền chỉnh sửa trên folder "Project-Fe
 * /home/ninhtrinhmm/spark-jars: Folder chứa các file JAR ở bước 2.b ( Chỉnh lại theo ý muốn )
 * ./NYC-data/Data: Dữ liệu NYC-taxi mà bạn vừa download về
 
-Tiến hành chạy file airflow-docker-compose-CeleryExe.yml: ```docker compose -f airflow-docker-compose-CeleryExe.yml up -d``` 
+Tiến hành chạy file airflow-docker-compose-CeleryExe.yml: ```cd ..``` && ```docker compose -f airflow-docker-compose-CeleryExe.yml up -d``` 
 
 NOTE: Lưu ý kiểm tra đủ các container đã vận hành thành công như trong hình
 
 <img width="906" height="247" alt="Image" src="https://github.com/user-attachments/assets/cf10c1cf-355f-47dd-ae0f-d69352b6be4c" />
+
+Truy cập vào localhost:8080 để vận hành Airflow. Sau khi điền USER và PASS, giao diện Airflow mở ra và bạn sẽ thấy tên của DAG như ở trong file data-pipeline.py
+
+<img width="1821" height="546" alt="Image" src="https://github.com/user-attachments/assets/12aedb24-4c9b-4ee1-ba02-e7512970962d" />
+
+Để vận hành DAG này, ấn vào nút Play ở phía bên tay phải. Để xem tiến độ chạy các task bên trong, click vào DAG và sẽ thấy tiến độ như trong hình 
+
+<img width="1821" height="842" alt="Image" src="https://github.com/user-attachments/assets/356681c0-d27b-4772-9475-731f75b1b81e" />
+
+3 Task lần lượt, tương ứng với 3 task được định nghĩa trong file data-pipeline.py như sau: 
+
+* spark_deltalake: khởi tạo Delta Table nếu chưa có, đưa những file Parquet vào Delta Table và tiến hành tracking version
+* export_to_minio: Kiểm tra những file Parquet mới được thêm vào ổ Local và upload lên Minio
+* batch_processing: Dựa vào tracking version và đưa những file Parquet mới ở Delta Table lên PostgreSQL
+
+Trong quá trình chạy, nếu thấy ở folder "Project-Feature-Store" xuất hiện folder Deltatable và 3 file sau nghĩa là đang chạy thành công. 
+
+<img width="1077" height="289" alt="Image" src="https://github.com/user-attachments/assets/4b5aa4a5-7d7e-44ea-863b-2c3624d45e6a" />
+
+* Deltatable: Folder Deltatable
+* delta_version_tracker.json: File Json chứa version của Delta Table trước và sau khi ghi dữ liệu mới vào
+* new_files_output.json: File Json chứa những file mới được thêm vào ổ local
+* processed_files.json: Fiel Json chứa danh sách những fiel đã được xử lý và đem vào Delta Table rồi
+
+Ở Airflow localhost:8080, hiển thị nhưu sau nghĩa là 3 Task đã được chạy thành công
+
+<img width="1151" height="391" alt="Image" src="https://github.com/user-attachments/assets/72cffc5f-9603-41e6-a65c-7a0d9fbbf141" />
+
+
+
+
 
 
 
