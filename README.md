@@ -107,7 +107,7 @@ Trước hết, để Airflow có quyền chỉnh sửa trên folder "Project-Fe
 
 Ở file airflow-docker-compose-CeleryExe.yml, thay đổi phần USER và PASS
 
-
+<img width="757" height="288" alt="Image" src="https://github.com/user-attachments/assets/b8779289-a6df-4bc0-b892-cac5d4157b6a" />
 
 Phần mount volume của airflow-worker có những lưu ý về các path local như sau: 
 
@@ -126,6 +126,9 @@ NOTE: Lưu ý kiểm tra đủ các container đã vận hành thành công như
 
 <img width="906" height="247" alt="Image" src="https://github.com/user-attachments/assets/cf10c1cf-355f-47dd-ae0f-d69352b6be4c" />
 
+NOTE: Nếu bị lỗi ```Could not read served logs: Client error '403 FORBIDDEN' for url 'http://db7227de6db5:8793/log/dag_id=data_processing_pipeline098run_id=manual__2025-10-27T03:25:23.957681+00:00/task_id=spark_deltalake/attempt=1.log'For more information check: https://httpstatuses.com/403``` mà vẫn chạy bình thường, chỉ không hiển thị log thì chạy lệnh sau:
+```python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"``` để điền Fernet Key và tạo 1 SECRET KEY mới. 
+
 Truy cập vào localhost:8080 để vận hành Airflow. Sau khi điền USER và PASS, giao diện Airflow mở ra và bạn sẽ thấy tên của DAG như ở trong file data-pipeline.py
 
 <img width="1821" height="546" alt="Image" src="https://github.com/user-attachments/assets/12aedb24-4c9b-4ee1-ba02-e7512970962d" />
@@ -138,7 +141,7 @@ Truy cập vào localhost:8080 để vận hành Airflow. Sau khi điền USER v
 
 * spark_deltalake: khởi tạo Delta Table nếu chưa có, đưa những file Parquet vào Delta Table và tiến hành tracking version
 * export_to_minio: Kiểm tra những file Parquet mới được thêm vào ổ Local và upload lên Minio
-* batch_processing: Dựa vào tracking version và đưa những file Parquet mới ở Delta Table lên PostgreSQL
+* batch_processing: Dựa vào tracking version và đưa những file Parquet mới ở Delta Table vào table ở PostgreSQL
 
 Trong quá trình chạy, nếu thấy ở folder "Project-Feature-Store" xuất hiện folder Deltatable và 3 file sau nghĩa là đang chạy thành công. 
 
@@ -149,9 +152,19 @@ Trong quá trình chạy, nếu thấy ở folder "Project-Feature-Store" xuất
 * new_files_output.json: File Json chứa những file mới được thêm vào ổ local
 * processed_files.json: Fiel Json chứa danh sách những fiel đã được xử lý và đem vào Delta Table rồi
 
-Ở Airflow localhost:8080, hiển thị nhưu sau nghĩa là 3 Task đã được chạy thành công
+Ở Airflow localhost:8080, hiển thị như sau nghĩa là 3 Task đã được chạy thành công
 
 <img width="1151" height="391" alt="Image" src="https://github.com/user-attachments/assets/72cffc5f-9603-41e6-a65c-7a0d9fbbf141" />
+
+Tiến hành mở PostgreSQL để kiểm tra table vừa mới tạo ở task số 3, Ở file python batch-process.py đã định nghĩa tên table ở PostgreSQL là "NYC", nên khi mở Dbeaver để truy cập vào PostgreSQL, chúng ta sẽ thấy bảng "nyc" hiện lên như trong hình
+
+<img width="744" height="167" alt="Image" src="https://github.com/user-attachments/assets/62b30744-a809-4c9d-ae21-25ba5ed88b91" />
+
+<img width="1883" height="979" alt="Image" src="https://github.com/user-attachments/assets/3ae8845e-656f-4cfd-881d-fc51d31ed712" /> 
+
+
+
+
 
 
 
