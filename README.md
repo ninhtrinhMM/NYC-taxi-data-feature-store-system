@@ -1,3 +1,278 @@
+# 1. Giới thiệu tổng quan: 
+
+## a. Tổng quan về dữ liệu NYC taxi: 
+
+Bộ Dataset là các bản record lịch trình di chuyển của taxi vàng ( Yellow Taxi ) và xanh lá ( Green Taxi ) bao gồm các trường dữ liệu ghi lại ngày/giờ đón và trả khách, địa điểm đón và trả khách, quãng đường di chuyển, chi tiết cước phí, loại hình giá cước, hình thức thanh toán và số lượng hành khách do tài xế báo cáo.
+
+Dữ liệu được sử dụng trong các tập dữ liệu đính kèm đã được thu thập và cung cấp cho Ủy ban Taxi và Xe thuê (TLC) của NYC bởi các nhà cung cấp công nghệ được ủy quyền theo Chương trình Nâng cao Trải nghiệm Hành khách Taxi và Xe thuê (TPEP/LPEP).
+
+Hồ sơ chuyến đi của Xe Cho Thuê Có Tài Xế (“FHV”) bao gồm các trường dữ liệu ghi lại số giấy phép của hãng điều phối (dispatching base license number) và ngày, giờ, cùng với ID vị trí khu vực taxi (taxi zone location ID) đón khách. Dữ liệu chuyến đi được công bố hàng tháng trên trang web này, thường là chậm hai tháng để có đủ thời gian cho các nhà cung cấp gửi đầy đủ dữ liệu. Do kích thước lớn của các tập dữ liệu, các tệp hồ sơ chuyến đi đã được lưu trữ dưới định dạng PARQUET.
+
+<img width="1024" height="640" alt="Image" src="https://github.com/user-attachments/assets/45490bb8-87e4-4cb3-996b-88264fec88c3" />
+
+## b. Mục tiêu của dự án:
+
+Với số lượng và dung lượng lớn các file parqute, đòi hỏi chúng ta phải thiết kế 1 hệ thống lữu trữ dữ liệu, phục vụ update dữ liệu mới được upload vào ổ local, tức xử lý dữ liệu theo Batch và dữ liệu được sinh ra ( generate ) liên tục theo Real-time, được gọi là Streaming. Đây được gọi là kiến trúc Lambda Architecture. 
+
+## c. Sơ đồ dự án: 
+------------
+
+# 2. Chuẩn bị: 
+
+## a. Kéo repo từ Github về ( sử dụng hệ điều hành Ubuntu ):
+
+Mở Terminal ( Ctrl + Alt +T ) và gõ lần lượt các lệnh sau:
+
+* git init
+* git clone https://github.com/ninhtrinhMM/NYC-taxi-data-feature-store-system
+* Ngay sau đó toàn bộ Github Repo từ link trên sẽ được tải về và hiển thị trong Folder tên là NYC-taxi-data-feature-store-system ở máy local, được gọi là Repo local. Mở VS Code và open Folder trên.
+
+## b. Công cụ chuẩn bị: 
+
+* Dbeaver
+* Git
+* Dowload các file JAR sau:
+* Tạo sẵn 1 Folder tên "Project-Feature-Store" để chứa folder Delta Table và các file cần thiết
+
+## c. Dowload dữ liệu NYC-taxi: 
+
+
+
+# 3. Triển khai: 
+
+## b. Khởi tạo hạ tầng: 
+
+Đầu tiên, mở file docker-compose.yml lên và tiến hành chỉnh sửa USER và PASSWORD của container posrgreSQL-db và datalake-minio
+
+<img width="743" height="250" alt="Image" src="https://github.com/user-attachments/assets/e7668f0f-0d68-4702-a6be-3d261b9078b5" />
+
+Sau đó chạy: ```docker compose -f docker-compose.yml up -d```
+
+NOTE: lưu ý kiểm tra và đảm bảo đủ các container đã được vận hành thành công
+
+<img width="1077" height="188" alt="Image" src="https://github.com/user-attachments/assets/18897a88-8e97-41f1-aa5b-b7da30094dec" />
+
+## c. Khởi tạo luồng dữ liệu Streaming và lưu trữ: 
+
+Vì container stream-producer đã được vận hành trong file docker compose trên nên dữ liệu đã được tạo ra và gửi message liên tục vào Topic "device-1" trong Kafka Broker. Truy cập localhost:9021, ấn vào phần "Topic" để check tình trạng sức khỏe của Topic "device-1", nếu là Healthy như trong ảnh thì tức là vận hành thành công. 
+
+<img width="1478" height="499" alt="Image" src="https://github.com/user-attachments/assets/c8b67cae-d624-47bf-b896-62627e46c749" />
+
+Tiếp theo, để dữ liệu trong topic "device-1" được xử lý real-time bởi Pyflink ( trường hợp này không áp dụng Water-mark stradetegy ) rồi đưa vào Topic khác với vai trò là đầu ra, chạy lệnh sau: 
+
+```python Streaming-processing/datastream_api.py```
+
+Chạy xong nếu hiển thị ở terminal là : ---Đọc Folder JAR thành công !--- thì nghĩa là đã vận hành file thành công.
+
+Note: trong trường hợp chạy file datastream_api.py gặp lỗi ```025-10-29 09:35:20,031 main ERROR FileManager (/opt/flink/log/flink-ninhtrinhmm-python-ninhtrinhmm-berserker-7540.log) java.io.FileNotFoundException: ``` thì khởi tạo lại folder log của flink nhưu sau:
+```sudo mkdir -p /opt/flink/log``` && ```sudo chown -R $USER:$USER /opt/flink/log``` && ```sudo chmod -R 755 /opt/flink/log```
+
+Lưu ý không được tắt Terminal này, nếu tắt thì luồng xử lý dữ liệu Real Time sẽ không còn nữa. Mọi command khác đều phải thực hiện ở Terminal khác. 
+
+Trở lại localhost:9021 để check xem tình trạng của 2 Topic là "device-1" và "NYC", nếu đều healthy thì nghĩa là vận hành thành công. 
+
+<img width="1444" height="501" alt="Image" src="https://github.com/user-attachments/assets/e1a09ef7-d6a0-4bf7-8620-b9ea56c435f6" />
+
+Tiếp theo, chúng ta cần có 1 table ở PostgreSQL để chứa các dữ liệu mới được sinh ra ở Topic "NYC". Để làm được, tiến hành khởi tạo 1 Connector có nhiệm vụ đưa dữ liệu từ Topic "NYC" vào table tại PostgreSQL, bằng cách gửi cấu hình của PostgreSQL tới container flink-connect
+
+Cấu hình của PostgreSQL được chứa trong file connect-sink.json như sau: 
+
+<img width="857" height="456" alt="Image" src="https://github.com/user-attachments/assets/18374075-5565-4142-852a-8fc86fadca45" />
+
+* "name": tên của connector
+* "topics": Tên của Topic mà Connector lấy dữ liệu, ở đây là topic "NYC"
+* "connection.url": địa chỉ của PostgreSQL, bao gồm cả tên Database
+* "connection.user" và "connection.pass": user và pass của PostgreSQL
+* "auto.create": tự tạo table mới nếu chưa có trước đó
+* "table.name.format": tên table được tạo ra để chứa dữ liệu từ Topic "NYC"
+
+Tiến hành khởi tạo Connector bằng lệnh sau: ```cd Streaming-processing``` && ```bash run.sh register_connector ./kafka-connect/connect-sink.json```
+
+Để đảm bảo Connector "connector-db" đã được vận hành tốt, chạy lệnh sau: ```curl -s http://localhost:8083/connectors/connector-db/status | python3 -m json.tool```
+
+Nếu thấy status là RUNNING nhưu trong hình thì nghĩa là vận hành thành công
+
+<img width="1533" height="297" alt="Image" src="https://github.com/user-attachments/assets/c96b16cd-b096-4a4b-9973-ee053402a352" />
+
+Bật Dbeaver lên, nhập đúng tên Database, USER và PASS ( ở file docker-compose.yml ). Vào các trường k6 / schemas / public / Tables thì sẽ thấy table mới tên là "nyc_stream" nhưu trong hình 
+
+<img width="1305" height="579" alt="Image" src="https://github.com/user-attachments/assets/deea51da-90c3-4b92-9878-dad80913e0ac" />
+
+## D. Khởi tạo Airflow để xử lý dữ liệu theo Batch: 
+
+Trước hết, để Airflow có quyền chỉnh sửa trên folder "Project-Feature-Store", chạy các lệnh sau ở Terminal Ubuntu ( ctrl + Alt + T ): 
+
+```chmod -R 777 ./Project-Feature-Store```
+```sudo chown -R 50000:0 < Path dẫn đến Folder "Project-Feature-Store" >```
+
+Ở file airflow-docker-compose-CeleryExe.yml, phần mount volume của airflow-worker có những lưu ý về các path local như sau: 
+
+<img width="849" height="278" alt="Image" src="https://github.com/user-attachments/assets/76159904-eb55-4a79-bd37-0bc939ccf807" />
+
+* ${AIRFLOW_PROJ_DIR:-.}/dags: Folder chứa file data-pipeline.py
+* ./Data-lake: Folder chứa file khởi tạo Delta Table: spark-delta-table.py và Upload dữ liệu lên Minio: export-to-minio.py
+* ./Batch-processing: Folder chứa file upload dữ liệu từ Delta Table lên PostgreSQL dựa theo tracking version: batch-process.py
+* /home/ninhtrinhmm/Project-Feature-Store: Folder "Project-Feature-Store" đã tạo ở bước 2.b ( Chỉnh lại theo ý muốn )
+* /home/ninhtrinhmm/spark-jars: Folder chứa các file JAR ở bước 2.b ( Chỉnh lại theo ý muốn )
+* ./NYC-data/Data: Dữ liệu NYC-taxi mà bạn vừa download về
+
+Tiến hành chạy file airflow-docker-compose-CeleryExe.yml: ```docker compose -f airflow-docker-compose-CeleryExe.yml up -d``` 
+
+NOTE: Lưu ý kiểm tra đủ các container đã vận hành thành công như trong hình
+
+<img width="906" height="247" alt="Image" src="https://github.com/user-attachments/assets/cf10c1cf-355f-47dd-ae0f-d69352b6be4c" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ========= khởi tạo môi trường Python 3.9 =========
 
 ''shel''    ### Nếu lỗi thì mở Vs code bằng code . trong Anaconda powershell
