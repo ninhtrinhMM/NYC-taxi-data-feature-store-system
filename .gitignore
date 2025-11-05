@@ -1,2 +1,2 @@
-NYC-data/
-.env
+.conda/
+**/*token*
