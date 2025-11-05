@@ -26,6 +26,17 @@ Mở Terminal ( Ctrl + Alt +T ) và gõ lần lượt các lệnh sau:
 * git init
 * git clone https://github.com/ninhtrinhMM/NYC-taxi-data-feature-store-system
 * Ngay sau đó toàn bộ Github Repo từ link trên sẽ được tải về và hiển thị trong Folder tên là NYC-taxi-data-feature-store-system ở máy local, được gọi là Repo local. Mở VS Code và open Folder trên.
+* Mở file docker-compose.yml lên và tiến hành chỉnh sửa USER và PASSWORD của container posrgreSQL-db và datalake-minio
+
+<img width="743" height="250" alt="Image" src="https://github.com/user-attachments/assets/e7668f0f-0d68-4702-a6be-3d261b9078b5" />
+
+Mở file config.yaml ở folder Data-lake/utils, chỉnh sửa tên bucket và access key và secret key, lưu ý không dược viết hoa và có ký tự "-"
+
+<img width="584" height="234" alt="Image" src="https://github.com/user-attachments/assets/213a134a-00a0-4a0e-82c7-b0ba43db95dd" />
+
+Mở file batch-process.py nằm trong folder Batch-processing và điền USER và PASS giống với container posrgreSQL-db ban nãy 
+
+<img width="597" height="166" alt="Image" src="https://github.com/user-attachments/assets/0728e77a-da0f-4d71-9ac5-629751adc5d3" />
 
 ## b. Công cụ chuẩn bị: 
 
@@ -40,13 +51,13 @@ Mở Terminal ( Ctrl + Alt +T ) và gõ lần lượt các lệnh sau:
 
 # 3. Triển khai: 
 
+## a. Khởi tạo môi trường: 
+
+```conda create -n NYC python=3.10.18``` && ```conda activate NYC``` && ```pip install -r requirement.txt```
+
 ## b. Khởi tạo hạ tầng: 
 
-Đầu tiên, mở file docker-compose.yml lên và tiến hành chỉnh sửa USER và PASSWORD của container posrgreSQL-db và datalake-minio
-
-<img width="743" height="250" alt="Image" src="https://github.com/user-attachments/assets/e7668f0f-0d68-4702-a6be-3d261b9078b5" />
-
-Sau đó chạy: ```docker compose -f docker-compose.yml up -d```
+Chạy: ```docker compose -f docker-compose.yml up -d```
 
 NOTE: lưu ý kiểm tra và đảm bảo đủ các container đã được vận hành thành công
 
@@ -98,7 +109,7 @@ Bật Dbeaver lên, nhập đúng tên Database, USER và PASS ( ở file docker
 
 <img width="1305" height="579" alt="Image" src="https://github.com/user-attachments/assets/deea51da-90c3-4b92-9878-dad80913e0ac" />
 
-## D. Khởi tạo Airflow để xử lý dữ liệu theo Batch: 
+## d. Khởi tạo Airflow để xử lý dữ liệu theo Batch: 
 
 Trước hết, để Airflow có quyền chỉnh sửa trên folder "Project-Feature-Store", chạy các lệnh sau ở Terminal Ubuntu ( ctrl + Alt + T ): 
 
@@ -156,13 +167,265 @@ Trong quá trình chạy, nếu thấy ở folder "Project-Feature-Store" xuất
 
 <img width="1151" height="391" alt="Image" src="https://github.com/user-attachments/assets/72cffc5f-9603-41e6-a65c-7a0d9fbbf141" />
 
-Tiến hành mở PostgreSQL để kiểm tra table vừa mới tạo ở task số 3, Ở file python batch-process.py đã định nghĩa tên table ở PostgreSQL là "NYC", nên khi mở Dbeaver để truy cập vào PostgreSQL, chúng ta sẽ thấy bảng "nyc" hiện lên như trong hình
+Tiến hành mở PostgreSQL để kiểm tra table vừa mới tạo ở task số 3, Ở file python batch-process.py đã định nghĩa tên table ở PostgreSQL là "NYC", nên khi mở Dbeaver để truy cập vào PostgreSQL, chúng ta sẽ thấy bảng "nyc" hiện lên như trong hình là thành công. 
 
 <img width="744" height="167" alt="Image" src="https://github.com/user-attachments/assets/62b30744-a809-4c9d-ae21-25ba5ed88b91" />
 
 <img width="1883" height="979" alt="Image" src="https://github.com/user-attachments/assets/3ae8845e-656f-4cfd-881d-fc51d31ed712" /> 
 
+## e. Khởi tạo Serving Table
 
+Hiện giờ đã có 2 bảng ở Postgresql là nyc và nyc_streaming. Tiếp theo tiến hành tạo bảng table mới là kết hợp từ 2 bảng trên được gọi là Serving Table
+
+Mở Dbeaver, vào mục Script và thực thi các Script sau: 
+
+* Tạo bảng Serving:
+```
+DO $BODY$
+DECLARE
+    v_sql TEXT := '';
+    v_col RECORD;
+    v_first BOOLEAN := TRUE;
+BEGIN
+    RAISE NOTICE '';
+
+    RAISE NOTICE 'BƯỚC 1: TẠO BẢNG NYC_SERVING';
+    
+    -- Bắt đầu tạo câu CREATE TABLE với cột ID đầu tiên
+    v_sql := E'CREATE TABLE nyc_serving (\n    id SERIAL PRIMARY KEY';
+    
+    -- Lấy TẤT CẢ cột từ NYC và NYC_stream (CHUẨN HÓA CHỮ THƯỜNG)
+    FOR v_col IN 
+        SELECT DISTINCT LOWER(column_name) as column_name
+        FROM (
+            SELECT column_name FROM information_schema.columns WHERE table_name = 'nyc'
+            UNION
+            SELECT column_name FROM information_schema.columns WHERE table_name = 'nyc_stream'
+        ) combined
+        WHERE LOWER(column_name) NOT IN ('id')
+        ORDER BY LOWER(column_name)
+    LOOP
+        v_sql := v_sql || E',\n    ' || v_col.column_name || ' TEXT';
+    END LOOP;
+    
+    -- Thêm cột data_source
+    v_sql := v_sql || E',\n    data_source TEXT CHECK (data_source IN (''batch'', ''stream''))';
+    v_sql := v_sql || E'\n);';
+    
+    -- Tạo bảng
+    EXECUTE v_sql;
+    RAISE NOTICE '✓ Đã tạo bảng nyc_serving với cột ID (SERIAL PRIMARY KEY)';
+    
+    -- Tạo indexes
+    CREATE INDEX IF NOT EXISTS idx_serving_source ON nyc_serving(data_source);
+    RAISE NOTICE '✓ Đã tạo index cho data_source';
+    
+    RAISE NOTICE '';
+END $BODY$;
+```
+* Tạo bảng Log để theo dõi tình trạng:
+```
+DO $$
+BEGIN
+
+    RAISE NOTICE 'BƯỚC 2: TẠO BẢNG LOG';
+    
+    DROP TABLE IF EXISTS nyc_merge_log CASCADE;
+    
+    CREATE TABLE nyc_merge_log (
+        id SERIAL PRIMARY KEY,
+        run_time TIMESTAMP DEFAULT NOW(),
+        batch_count BIGINT,
+        stream_count BIGINT,
+        total_count BIGINT,
+        execution_seconds DECIMAL(10,2),
+        status TEXT
+    );
+    
+    RAISE NOTICE '✓ Đã tạo bảng nyc_merge_log';
+    RAISE NOTICE '';
+END $$;
+```
+
+* Tạo Fuction-Merge:
+```
+DO $$
+BEGIN
+    
+    RAISE NOTICE 'BƯỚC 3: TẠO MERGE FUNCTION';
+END $$;
+
+CREATE OR REPLACE FUNCTION merge_to_serving()
+RETURNS TABLE(
+    status TEXT,
+    batch_rows BIGINT,
+    stream_rows BIGINT,
+    total_rows BIGINT,
+    exec_time DECIMAL
+) AS $$
+DECLARE
+    v_start_time TIMESTAMP;
+    v_batch_count BIGINT := 0;
+    v_stream_count BIGINT := 0;
+    v_total_count BIGINT := 0;
+    v_exec_time DECIMAL;
+    v_columns TEXT;
+    v_sql TEXT;
+BEGIN
+    v_start_time := clock_timestamp();
+    
+    -- Lấy danh sách cột CHUNG giữa 2 bảng (bỏ qua cột id gốc)
+    SELECT string_agg(column_name, ', ' ORDER BY column_name)
+    INTO v_columns
+    FROM (
+        SELECT column_name FROM information_schema.columns WHERE table_name = 'nyc'
+        INTERSECT
+        SELECT column_name FROM information_schema.columns WHERE table_name = 'nyc_stream'
+    ) common
+    WHERE column_name NOT IN ('id', 'ID', 'Id');
+    
+    -- Xóa dữ liệu cũ trong serving
+    TRUNCATE nyc_serving RESTART IDENTITY;
+    
+    -- MERGE BATCH DATA: Insert từ NYC
+    v_sql := format(
+        'INSERT INTO nyc_serving (%s, data_source) SELECT %s, ''batch'' FROM nyc',
+        v_columns, v_columns
+    );
+    EXECUTE v_sql;
+    GET DIAGNOSTICS v_batch_count = ROW_COUNT;
+    
+    -- MERGE STREAMING DATA: Insert từ NYC_stream
+    v_sql := format(
+        'INSERT INTO nyc_serving (%s, data_source) SELECT %s, ''stream'' FROM nyc_stream',
+        v_columns, v_columns
+    );
+    EXECUTE v_sql;
+    GET DIAGNOSTICS v_stream_count = ROW_COUNT;
+    
+    -- Đếm tổng số records
+    SELECT COUNT(*) INTO v_total_count FROM nyc_serving;
+    
+    -- Tính thời gian thực thi
+    v_exec_time := EXTRACT(EPOCH FROM (clock_timestamp() - v_start_time));
+    
+    -- Ghi log
+    INSERT INTO nyc_merge_log (batch_count, stream_count, total_count, execution_seconds, status)
+    VALUES (v_batch_count, v_stream_count, v_total_count, v_exec_time, 'SUCCESS');
+    
+    -- Return kết quả
+    RETURN QUERY SELECT 
+        'SUCCESS'::TEXT,
+        v_batch_count,
+        v_stream_count,
+        v_total_count,
+        v_exec_time;
+        
+EXCEPTION WHEN OTHERS THEN
+    -- Ghi log lỗi
+    INSERT INTO nyc_merge_log (status)
+    VALUES ('FAILED: ' || SQLERRM);
+    
+    RETURN QUERY SELECT 
+        ('FAILED: ' || SQLERRM)::TEXT,
+        0::BIGINT,
+        0::BIGINT,
+        0::BIGINT,
+        0::DECIMAL;
+END;
+$$ LANGUAGE plpgsql;
+
+DO $$
+BEGIN
+    RAISE NOTICE '✓ Đã tạo function: merge_to_serving()';
+    RAISE NOTICE '';
+END $$;
+```
+* Tạo Trigger tự động sync cho dữ liệu từ bảng nyc_stream:
+```
+DO $$
+BEGIN
+    RAISE NOTICE '========================================';
+    RAISE NOTICE 'BƯỚC 4: TẠO TRIGGER TỰ ĐỘNG';
+    RAISE NOTICE '========================================';
+END $$;
+
+CREATE OR REPLACE FUNCTION auto_sync_stream()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_columns TEXT;
+    v_values TEXT;
+    v_sql TEXT;
+BEGIN
+    -- Lấy danh sách cột chung (bỏ cột id gốc)
+    SELECT string_agg(column_name, ', ' ORDER BY column_name)
+    INTO v_columns
+    FROM (
+        SELECT column_name FROM information_schema.columns WHERE table_name = 'nyc'
+        INTERSECT
+        SELECT column_name FROM information_schema.columns WHERE table_name = 'nyc_stream'
+    ) common
+    WHERE column_name NOT IN ('id', 'ID', 'Id');
+    
+    -- Tạo danh sách giá trị từ NEW
+    SELECT string_agg('$1.' || column_name, ', ' ORDER BY column_name)
+    INTO v_values
+    FROM (
+        SELECT column_name FROM information_schema.columns WHERE table_name = 'nyc'
+        INTERSECT
+        SELECT column_name FROM information_schema.columns WHERE table_name = 'nyc_stream'
+    ) common
+    WHERE column_name NOT IN ('id', 'ID', 'Id');
+    
+    -- Tạo câu INSERT (ID sẽ tự động tăng do SERIAL)
+    v_sql := format(
+        'INSERT INTO nyc_serving (%s, data_source) SELECT %s, ''stream''',
+        v_columns, v_values
+    );
+    
+    EXECUTE v_sql USING NEW;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_auto_sync ON nyc_stream;
+
+CREATE TRIGGER trg_auto_sync
+    AFTER INSERT ON nyc_stream
+    FOR EACH ROW
+    EXECUTE FUNCTION auto_sync_stream();
+
+DO $$
+BEGIN
+    RAISE NOTICE '✓ Đã tạo trigger: trg_auto_sync';
+    RAISE NOTICE '✓ Mỗi khi INSERT vào nyc_stream → Tự động vào nyc_serving (ID tự tăng)';
+    RAISE NOTICE '';
+END $$;
+```
+* Chạy Merge lần đầu
+```
+DO $$
+DECLARE
+    v_result RECORD;
+BEGIN
+    RAISE NOTICE '========================================';
+    RAISE NOTICE 'BƯỚC 5: MERGE DỮ LIỆU LẦN ĐẦU';
+    RAISE NOTICE '========================================';
+    
+    SELECT * INTO v_result FROM merge_to_serving();
+    
+    RAISE NOTICE 'Status: %', v_result.status;
+    RAISE NOTICE 'Batch: % dòng', v_result.batch_rows;
+    RAISE NOTICE 'Stream: % dòng', v_result.stream_rows;
+    RAISE NOTICE 'Tổng: % dòng', v_result.total_rows;
+    RAISE NOTICE 'Thời gian: % giây', v_result.exec_time;
+    RAISE NOTICE '';
+END $$;
+```
+Sau khi chạy xong, chúng ta sẽ thấy dữ liệu xuất hiện ở bảng nyc_serving, đây chính là dữ liệu từ 2 bảng nyc và nyc_stream. 
+
+Vì đã có Trigger tự động sync nên dữ liệu từ bảng nyc_stream luôn chảy về bảng nyc_serving. Còn để dữ liệu từ nyc được chảy về nyc_serving, chúng ta chỉ cần thực thi script sau: ```SELECT * INTO v_result FROM merge_to_serving();```
 
 
 
