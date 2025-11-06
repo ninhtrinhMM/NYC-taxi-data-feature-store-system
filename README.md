@@ -26,7 +26,8 @@ Mở Terminal ( Ctrl + Alt +T ) và gõ lần lượt các lệnh sau:
 * git init
 * git clone https://github.com/ninhtrinhMM/NYC-taxi-data-feature-store-system
 * Ngay sau đó toàn bộ Github Repo từ link trên sẽ được tải về và hiển thị trong Folder tên là NYC-taxi-data-feature-store-system ở máy local, được gọi là Repo local. Mở VS Code và open Folder trên.
-* Mở file docker-compose.yml lên và tiến hành chỉnh sửa USER và PASSWORD của container posrgreSQL-db và datalake-minio
+  
+Mở file docker-compose.yml lên và tiến hành chỉnh sửa USER và PASSWORD của container posrgreSQL-db và datalake-minio
 
 <img width="743" height="250" alt="Image" src="https://github.com/user-attachments/assets/e7668f0f-0d68-4702-a6be-3d261b9078b5" />
 
@@ -37,6 +38,10 @@ Mở file config.yaml ở folder Data-lake/utils, chỉnh sửa tên bucket và 
 Mở file batch-process.py nằm trong folder Batch-processing và điền USER và PASS giống với container posrgreSQL-db ban nãy 
 
 <img width="597" height="166" alt="Image" src="https://github.com/user-attachments/assets/0728e77a-da0f-4d71-9ac5-629751adc5d3" />
+
+Ở file airflow-docker-compose-CeleryExe.yml, thay đổi phần USER và PASS
+
+<img width="757" height="288" alt="Image" src="https://github.com/user-attachments/assets/b8779289-a6df-4bc0-b892-cac5d4157b6a" />
 
 ## b. Công cụ chuẩn bị: 
 
@@ -115,10 +120,6 @@ Trước hết, để Airflow có quyền chỉnh sửa trên folder "Project-Fe
 
 ```chmod -R 777 ./Project-Feature-Store```
 ```sudo chown -R 50000:0 < Path dẫn đến Folder "Project-Feature-Store" >```
-
-Ở file airflow-docker-compose-CeleryExe.yml, thay đổi phần USER và PASS
-
-<img width="757" height="288" alt="Image" src="https://github.com/user-attachments/assets/b8779289-a6df-4bc0-b892-cac5d4157b6a" />
 
 Phần mount volume của airflow-worker có những lưu ý về các path local như sau: 
 
