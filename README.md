@@ -430,6 +430,9 @@ Vì đã có Trigger tự động sync nên dữ liệu từ bảng nyc_stream l
 
 <img width="1693" height="927" alt="Image" src="https://github.com/user-attachments/assets/48d94c3b-60e2-47eb-993d-5e849965afd5" />
 
+Hoặc có thể tích hợp việc chạy Script trên thành 1 task ở Air Flow chạy ở sau cùng. 
+
+
 
 
 
