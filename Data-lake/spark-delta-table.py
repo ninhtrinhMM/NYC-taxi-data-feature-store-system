@@ -75,6 +75,13 @@ def main():
             df = df.withColumn(field.name, col(field.name).cast(StringType()))
         return df
     
+    # Hàm ép tên các cột thành lower case
+
+    def lowercase_columns(df):
+        for col_name in df.columns:
+            df = df.withColumnRenamed(col_name, col_name.lower())
+        return df
+    
     # ========= LƯU VERSION TRƯỚC KHI GHI =========
     
     if os.path.exists(delta_path) and os.listdir(delta_path): 
@@ -94,6 +101,8 @@ def main():
         print(f"-----{idx+1}/{len(new_files)}: Bắt đầu với file {name} vào Deltatable-----")
     
         df = spark.read.parquet(parquet)
+
+        df= lowercase_columns(df)
         df_fix = to_string(df)
     
         if version_before == -1 :
