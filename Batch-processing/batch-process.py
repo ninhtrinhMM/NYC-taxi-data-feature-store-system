@@ -83,7 +83,7 @@ def main():
         "url": "jdbc:postgresql://172.17.0.1:5434/k6",
         "dbtable": "NYC",
         "user": "<....>",
-        "password": "<....>",
+        "password": "<......>",
         "driver": "org.postgresql.Driver"}
     
     # Kiểm tra bảng PostgreSQL có tồn tại không, nếu không thì tạo mới
