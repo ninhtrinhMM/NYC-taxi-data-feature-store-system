@@ -1,12 +1,12 @@
 {
-  "name": "connector-db",
+  "name": "connect",
   "config": {
     "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
     "tasks.max": "1",
     "topics": "NYC",
     "connection.url": "jdbc:postgresql://posrgreSQL-db:5432/k6",
-    "connection.user": "....",
-    "connection.password": "......",
+    "connection.user": "<....>",
+    "connection.password": "<....>",
     "auto.create": "true",
     "auto.evolve": "true",
     "insert.mode": "insert",
