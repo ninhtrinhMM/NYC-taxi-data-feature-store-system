@@ -89,9 +89,9 @@ Trở lại localhost:9021 để check xem tình trạng của 2 Topic là "devi
 
 <img width="1444" height="501" alt="Image" src="https://github.com/user-attachments/assets/e1a09ef7-d6a0-4bf7-8620-b9ea56c435f6" />
 
-Tiếp theo, chúng ta cần có 1 table ở PostgreSQL để chứa các dữ liệu mới được sinh ra ở Topic "NYC". Để làm được, tiến hành khởi tạo 1 Connector có nhiệm vụ đưa dữ liệu từ Topic "NYC" vào table tại PostgreSQL, bằng cách gửi cấu hình của PostgreSQL tới container flink-connect
+Tiếp theo, chúng ta cần có 1 table ở PostgreSQL để chứa các dữ liệu mới được sinh ra ở Topic "NYC". Để làm được, tiến hành khởi tạo 1 Kafka Connector có nhiệm vụ đưa dữ liệu từ Topic "NYC" vào table tại PostgreSQL, bằng cách gửi cấu hình của Connector tới container flink-connect 
 
-Cấu hình của PostgreSQL được chứa trong file connect-sink.json như sau: 
+Cấu hình của Connector ( có chứa cấu hình của PostgreSQL luôn ) như sau: 
 
 <img width="857" height="456" alt="Image" src="https://github.com/user-attachments/assets/18374075-5565-4142-852a-8fc86fadca45" />
 
