@@ -89,7 +89,7 @@ Trở lại localhost:9021 để check xem tình trạng của 2 Topic là "devi
 
 <img width="1444" height="501" alt="Image" src="https://github.com/user-attachments/assets/e1a09ef7-d6a0-4bf7-8620-b9ea56c435f6" />
 
-Tiếp theo, chúng ta cần có 1 table ở PostgreSQL để chứa các dữ liệu mới được sinh ra ở Topic "NYC". Để làm được, tiến hành khởi tạo 1 Kafka Connector có nhiệm vụ đưa dữ liệu từ Topic "NYC" vào table tại PostgreSQL, bằng cách gửi cấu hình của Connector tới container flink-connect 
+Tiếp theo, chúng ta cần có 1 table ở PostgreSQL để chứa các dữ liệu mới được sinh ra ở Topic "NYC". Để làm được, tiến hành khởi tạo 1 Kafka Connector có nhiệm vụ đưa dữ liệu từ Topic "NYC" vào table tại PostgreSQL, bằng cách gửi cấu hình của Connector tới container flink-connect ( service Connect )
 
 Cấu hình của Connector ( có chứa cấu hình của PostgreSQL luôn ) như sau: 
 
@@ -114,7 +114,7 @@ Bật Dbeaver lên, nhập đúng tên Database, USER và PASS ( ở file docker
 
 <img width="1305" height="579" alt="Image" src="https://github.com/user-attachments/assets/deea51da-90c3-4b92-9878-dad80913e0ac" />
 
-## d. Khởi tạo Airflow để xử lý dữ liệu theo Batch: 
+## d. Khởi tạo Airflow để xử lý dữ liệu theo Batch và lưu trữ:
 
 Trước hết, để Airflow có quyền chỉnh sửa trên folder "Project-Feature-Store", chạy các lệnh sau ở Terminal Ubuntu ( ctrl + Alt + T ): 
 
@@ -174,7 +174,7 @@ Tiến hành mở PostgreSQL để kiểm tra table vừa mới tạo ở task s
 
 <img width="1435" height="773" alt="Image" src="https://github.com/user-attachments/assets/7390f36c-0864-4bf3-8868-ac185c27c139" />
 
-## e. Khởi tạo Serving Table
+## e. Khởi tạo Serving Table kết hợp từ Batch và Stream processing:
 
 Hiện giờ đã có 2 bảng ở Postgresql là nyc và nyc_streaming. Tiếp theo tiến hành tạo bảng table mới là kết hợp từ 2 bảng trên được gọi là Serving Table
 
@@ -431,6 +431,30 @@ Vì đã có Trigger tự động sync nên dữ liệu từ bảng nyc_stream l
 <img width="1693" height="927" alt="Image" src="https://github.com/user-attachments/assets/48d94c3b-60e2-47eb-993d-5e849965afd5" />
 
 Hoặc có thể tích hợp việc chạy Script trên thành 1 task ở Air Flow chạy ở sau cùng. 
+
+# 4. Kích hoạt Debezium để theo dõi CDC từ bảng Serving Table: 
+
+Để nắm bắt các thay đổi, cập nhập ở bảng nyc_serving, thay vì dùng SQL query có thể gây mất thời gian, chúng ta sử dụng công cụ Debezium đã được kích hoạt sẵn trong fiel docker-compose.yml được chạy ở ban đầu. 
+
+Tiến hành khởi tạo Kafka Connector có nhiệm vụ kết nối giữa bảng nyc_serving và Kafka Broker, bằng cách gửi cấu hình của Connector đến container cdc-debezium ( service Debezium ) như sau: 
+
+```cd Streaming-processing``` && ```bash run-cdc.sh register_connector ./kafka-connect/connect-debezium.json```
+
+Cấu hình của Connector nyc-serving-cdc như sau:  
+
+<img width="835" height="324" alt="Image" src="https://github.com/user-attachments/assets/be43b14d-f3c8-44b0-8f79-25deb363a6f7" />  
+
+Trong đó, tên Topic mới chứa các mesage CDC sẽ là "database.server.name" + "table.include.list", trong trường hợp này, tên Topic mới sẽ là "test.public.nyc_serving"
+
+Lên localhost:9021, vào Topic để kiểm tra tình trạng của Topic mới có Healthy không
+
+<img width="1336" height="653" alt="Image" src="https://github.com/user-attachments/assets/85762e44-4290-4cb0-85e4-982e342f6446" /> 
+
+Click vào Topic "test.public.nyc_serving" và vào phần Message để xem các thay đổi vừa được cập nhập từ bảng nyc_serving
+
+<img width="1693" height="860" alt="Image" src="https://github.com/user-attachments/assets/9b39ad91-cc74-48b1-a643-60c5a613a811" /> 
+
+
 
 
 
