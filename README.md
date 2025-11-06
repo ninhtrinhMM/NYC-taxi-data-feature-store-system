@@ -171,7 +171,7 @@ Tiến hành mở PostgreSQL để kiểm tra table vừa mới tạo ở task s
 
 <img width="744" height="167" alt="Image" src="https://github.com/user-attachments/assets/62b30744-a809-4c9d-ae21-25ba5ed88b91" />
 
-<img width="1883" height="979" alt="Image" src="https://github.com/user-attachments/assets/3ae8845e-656f-4cfd-881d-fc51d31ed712" /> 
+<img width="1435" height="773" alt="Image" src="https://github.com/user-attachments/assets/7390f36c-0864-4bf3-8868-ac185c27c139" />
 
 ## e. Khởi tạo Serving Table
 
