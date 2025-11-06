@@ -428,4 +428,8 @@ Sau khi chạy xong, chúng ta sẽ thấy dữ liệu xuất hiện ở bảng 
 
 Vì đã có Trigger tự động sync nên dữ liệu từ bảng nyc_stream luôn chảy về bảng nyc_serving. Còn để dữ liệu từ nyc được chảy về nyc_serving, chúng ta chỉ cần thực thi script sau: ```SELECT * INTO v_result FROM merge_to_serving();```
 
+<img width="1693" height="927" alt="Image" src="https://github.com/user-attachments/assets/48d94c3b-60e2-47eb-993d-5e849965afd5" />
+
+
+
 
