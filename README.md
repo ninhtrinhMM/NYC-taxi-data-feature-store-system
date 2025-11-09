@@ -15,7 +15,8 @@ Hồ sơ chuyến đi của Xe Cho Thuê Có Tài Xế (“FHV”) bao gồm cá
 Với số lượng và dung lượng lớn các file parqute, đòi hỏi chúng ta phải thiết kế 1 hệ thống lữu trữ dữ liệu, phục vụ update dữ liệu mới được upload vào ổ local, tức xử lý dữ liệu theo Batch và dữ liệu được sinh ra ( generate ) liên tục theo Real-time, được gọi là Streaming. Đây được gọi là kiến trúc Lambda Architecture. 
 
 ## c. Sơ đồ dự án: 
-------------
+
+![Image](https://github.com/user-attachments/assets/0e738d07-e065-4300-82ec-bc581777cc5a)
 
 # 2. Chuẩn bị: 
 
