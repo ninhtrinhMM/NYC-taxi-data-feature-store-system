@@ -34,7 +34,7 @@ def main():
     )
     
     spark = configure_spark_with_delta_pip(builder).getOrCreate()
-    print("---✅ Spark Session đã khởi tạo thành công!---")
+    print("--- Spark Session đã khởi tạo thành công!---")
     
     # ======= Đọc file ======
     version_tracker_file = "/opt/airflow/Project-Feature-Store/delta_version_tracker.json"
@@ -121,19 +121,19 @@ def main():
             .mode(write_mode) \
             .save()
         
-        print(f"-----✅ Upload thành công {row_count} dòng-----")
+        print(f"----- Upload thành công {row_count} dòng-----")
         
         # ===== CẬP NHẬT VERSION TRACKER =====
         with open(version_tracker_file, 'w') as f:
             json.dump({}, f, indent=2)
         
     except Exception as e:
-        print(f"  ❌ Lỗi khi upload: {e}")
+        print(f"   Lỗi khi upload: {e}")
         spark.stop()
         return
     
     spark.stop()
-    print("\n🎉 Hoàn tất!")
+    print("\n Hoàn tất!")
 
 if __name__ == "__main__":
     main()
