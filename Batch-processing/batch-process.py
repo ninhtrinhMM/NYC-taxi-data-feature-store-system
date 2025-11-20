@@ -76,7 +76,7 @@ def main():
                    .drop("_change_type", "_commit_version", "_commit_timestamp")
     
     row_count = df.count()
-    print(f"📊 Tổng số dòng cần upload: {row_count}")
+    print(f"--- Tổng số dòng cần upload: {row_count}")
     
     # =========CẤU HÌNH POSTGRESQL CONNECTION=========
     postgres_config = {
@@ -109,7 +109,7 @@ def main():
     try:
         write_mode = "append"  # Luôn append vì chỉ ghi dữ liệu mới
         
-        print(f"  ⬆️  Uploading {row_count} dòng to PostgreSQL...")
+        print(f" --- Uploading {row_count} dòng to PostgreSQL...")
         
         df.write \
             .format("jdbc") \
