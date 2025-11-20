@@ -40,19 +40,19 @@ def main():
     )
     
     spark = configure_spark_with_delta_pip(builder).getOrCreate()
-    print("---✅ Spark Session đã khởi tạo thành công!---")
+    print("--- Spark Session đã khởi tạo thành công!---")
     
     # ĐỌC DELTA TABLE TỪ MINIO
     
-    print(f"-----📥 Đọc Delta Table từ MinIO -----")
+    print(f"----- Đọc Delta Table từ MinIO -----")
 
     try:
         df = spark.read.format("delta").load("s3a://mlop2/nycdata")
         
-        print(f"-----✅ Đọc thành công! Tổng số dòng: {df.count():,}-----")
+        print(f"----- Đọc thành công! Tổng số dòng: {df.count():,}-----")
 
     except Exception as e:
-        print(f"---❌ Lỗi khi đọc từ MinIO: {e}---")
+        print(f"--- Lỗi khi đọc từ MinIO: {e}---")
         spark.stop()
         return
     
@@ -68,7 +68,7 @@ def main():
 
     # ========GHI DỮ LIỆU VÀO POSTGRESQL================
 
-    print(f"-----💾 Đang ghi dữ liệu vào PostgreSQL table '{postgres_config['dbtable']}'......")
+    print(f"----- Đang ghi dữ liệu vào PostgreSQL table '{postgres_config['dbtable']}'......")
     
     try:
         df.repartition(100).write \
@@ -82,15 +82,15 @@ def main():
             .mode("overwrite") \
             .save()
         
-        print(f"✅ Đã ghi thành công vào PostgreSQL!")
+        print(f" -----Đã ghi thành công vào PostgreSQL!")
         
     except Exception as e:
-        print(f"❌ Lỗi khi ghi vào PostgreSQL: {e}")
+        print(f"--- Lỗi khi ghi vào PostgreSQL: {e}")
         spark.stop()
         return
 
     spark.stop()
-    print("\n🎉 Hoàn tất! Spark Session đã đóng.")
+    print("\n Hoàn tất, Spark Session đã đóng.")
 
 if __name__ == "__main__":
     main()
